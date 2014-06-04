@@ -142,11 +142,15 @@ Protected meta (meta whose key is prefixed with an underscore) is not included i
 
 You may limit the fields returned in the response using the `fields` parameter:
 
-`GET /orders?fields=ids`
+`GET /orders?fields=id`
+
+To include multiple fields, separate them with commas:
+
+`GET /orders?fields=id,status`
 
 You can specify sub-fields using dot-notation:
 
-`GET /orders?fields=payment_details.method_title`
+`GET /orders?fields=id,status,payment_details.method_title`
 
 Sub-fields can't be limited for resources that have multiple structs, like an order's line items. For example, this will return just the line items, but each line item will have the full set of information, not just the product ID:
 
