@@ -2112,6 +2112,10 @@ If you don't specify an end date, the current date will be used.
 }
 ```
 
+# Troubleshooting
+
+* Nginx - Older configurations of Nginx can cause issues with the API, see [this issue](https://github.com/woothemes/woocommerce/issues/5616#issuecomment-47338737) for details
+
 # Tools
 
 * [WooCommerce REST API Client Library](https://github.com/kloon/WooCommerce-REST-API-Client-Library) - A simple PHP client library by Gerhard Potgieter
