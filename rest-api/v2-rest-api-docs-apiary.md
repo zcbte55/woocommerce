@@ -284,7 +284,7 @@ The API uses the appropriate HTTP verb for each action:
 
 ## JSONP Support
 
-The API supports JSONP by default. You can specify the callback using the `?_jsonp` parameter for `GET` requests to have the response wrapped in a JSON function:
+The API supports JSONP by default. JSONP responses uses the `application/javascript` content-type. You can specify the callback using the `?_jsonp` parameter for `GET` requests to have the response wrapped in a JSON function:
 
 ```
 GET /orders/count?_jsonp=ordersCount
@@ -344,7 +344,7 @@ Custom topics can also be used which map to a single hook name, so for example y
 
 ### Delivery/Payload
 
-Delivery is done using `wp_remote_post()` and processed in the background by default using wp-cron. A few custom headers are added to the request to help the receiver process the webhook:
+Delivery is done using `wp_remote_post()` (HTTP POST) and processed in the background by default using wp-cron. A few custom headers are added to the request to help the receiver process the webhook:
 
 * `X-WC-Webhook-Topic` - e.g. `order.updated`
 * `X-WC-Webhook-Resource` - e.g. `order`
@@ -369,22 +369,9 @@ After 5 consecutive failed deliveries (as defined by a non HTTP 2xx response cod
 
 Delivery logs can be fetched through the REST API endpoint or in code using `WC_Webhook::get_delivery_logs()`
 
-### REST API Endpoints
+### Endpoints
 
-TODO - migrate to it's own resource group
-
-* `GET /webhooks` - get all webhooks
-* `GET /webhooks/count` - get a count of webhooks
-* `GET /webhooks/#{id}` - get a webhook by ID
-* `POST /webhooks/` - create a new webhook
-* `PUT /webhooks/#{id}` - update a webhook
-* `DELETE /webhooks/#{id}` - delete a webhook
-* `GET /webhooks/#{webhook_id}/deliveries` - get delivery logs for the given webhook
-* `GET /webhooks/#{webhook_id}/deliveries/#{id}` - get a delivery log by ID for the given webhook
-
-`topic` and `delivery_url` are required when creating or updating a webhook. `secret` defaults to the API user's consumer secret key if not provided.
-
-After successfully creating a new webhook, a ping is sent to the delivery URL containing the newly-created webhook's ID.
+See the webhook resource section.
 
 ## Troubleshooting
 
@@ -397,7 +384,10 @@ After successfully creating a new webhook, a ping is sent to the delivery URL co
 * [Paw HTTP Client](https://itunes.apple.com/us/app/paw-http-client/id584653203?mt=12) - Another excellent HTTP client for Mac OS X
 
 # Group API Index
-The API index provides information about the endpoints available for the site, as well as store-specific information. No authentication is required to access the API index, however if the REST API is disabled, you will receive a `404 Not Found` error.
+
+The API index provides information about the endpoints available for the site, as well as store-specific information.
+
+No authentication is required to access the API index, however if the REST API is disabled, you will receive a `404 Not Found` error.
 
 ## Index [/]
 
@@ -743,20 +733,20 @@ Store Attributes:
         }
         ```
 
-### Retrieve the Index [GET]
+### Get the Index [GET]
 + Response 200
     
     [Index][]
 
 # Group Coupons
 
-## Coupon [/coupons/{id}]
+## Coupon [/coupons/{id}{?force}]
 
 The Coupon resource has the following attributes:
 
-* `id` (int) - coupon ID (post ID)
-* `code` (string) - coupon code, always lowercase.
-* `type` (string) - coupon type, valid core types are:
+* `id` *(int)* - coupon ID (post ID)
+* `code` *(string)* - coupon code, always lowercase.
+* `type` *(string)* - coupon type, valid core types are:
 * `created_at`
 * `updated_at`
 * `amount`
@@ -779,7 +769,7 @@ The Coupon resource has the following attributes:
 * `description`
 
 + Parameters
-    + id (required, number, `1`) ... ID of the coupon
+    + id (required, number, `123`) ... ID of the coupon
 
 + Model (application/json)
     
@@ -848,11 +838,14 @@ To update a Coupon, send a JSON hash with an updated value for one or more of th
         }
         ```
 
-+ Response 201
++ Response 200
 
     [Coupon][]
 
 ### Delete a Coupon [DELETE]
+
++ Parameters
+    + force (optional, string `true`) ... Whether to permanently delete the coupon, defaults to `false`. Note that permanently deleting the coupon will return HTTP 200 rather than HTTP 202.
 
 + Response 202
     
@@ -864,15 +857,14 @@ To update a Coupon, send a JSON hash with an updated value for one or more of th
         }
         ```
             
-## Coupons Collection [/coupons{?fields,filter,page,limit}]
+## Coupons Collection [/coupons{?fields,filter,page}]
 
 Collection of all Coupons
 
 + Parameters
-    - fields (optional, string) ... fields
-    - filter (optional, string) ... filter
-    - page (optional, number) ... page
-    - limit (optional, number) .. limit
+    * fields (optional, string, `id,code`) ... see Parameters > Fields Parameter documentation
+    * filter (optional, string, `filter[limit]=100`) ... see Parameters > Filter Parameter documention
+    * page (optional, string, `2`) ... see Pagination documentation
 
 + Model (application/json)
 
@@ -982,3 +974,361 @@ To create a new Coupon provide a JSON hash. Required attributes are: TODO
 + Response 201 (application/json)
 
     [Coupon][]
+    
+# Group Webhooks
+
+## Webhook [/webhooks/{id}]
+
+The webhook resource has the following attributes:
+
+* `id` *(int)* - the webhook ID (post ID)
+* `name` *(string)* - a friendly name for the webhook, defaults to "Webhook created on <date>"
+* `status` *(string)* - webhook status, options are `active` (delivers payload), `paused` (does not deliver)`, or `disabled` (does not deliver due delivery failures)
+* `topic` *(string)* - webhook topic, e.g. `coupon.updated`
+* `resource` *(string)* - webhook resource, e.g. `coupon`
+* `event` *(string)* - webhook event, e.g. `updated`
+* `hooks` *(hash)* - JSON hash of WordPress action names associated with the webhook
+* `delivery_url` *(string)* - the URL where the webhook payload is delivered
+* `created_at` *(string)* - UTC DateTime when the webhook was created
+* `updated_at` *(string)* - UTC DateTime when the webhook was last updated
+
++ Parameters
+    * id (required, number, `123`) ... ID of the webhook
+
++ Model (application/json)
+
+    + Body
+
+        ```json
+        {
+          "webhook": {
+            "id": 21531,
+            "name": "An add to cart webhook",
+            "status": "active",
+            "topic": "action.woocommerce_add_to_cart",
+            "resource": "action",
+            "event": "woocommerce_add_to_cart",
+            "hooks": [
+              "woocommerce_add_to_cart"
+            ],
+            "delivery_url": "http://requestb.in/1972vwx1",
+            "created_at": "2014-07-30T16:53:12Z",
+            "updated_at": "2014-07-30T16:53:12Z"
+          }
+        }
+
+### Get a single webhook [GET]
++ Response 200
+
+    [Webhook][]
+
+### Edit a Webhook [PUT]
+
+To update a webhook, send a JSON hash with an updated value for one of more of the Webhook attributes. All attributes values from the previous version of the Webhook are carried over by default if not included in the hash.
+
++ Request (application/json)
+
+    + Body
+
+        ```json
+        {
+          "webhook": {
+            "topic": "An add to cart webhook"
+            "delivery_url": "http://requestb.in/1972vwx1",
+          }
+        }
+        ```
+
++ Response 200
+
+    [Webhook][]
+
+### Delete a Webhook [DELETE]
+
++ Response 202
+
+    + Body
+
+        ```json
+        {
+          "message": "Permanently deleted webhook"
+        }
+        ```
+
+## Webhooks Collection [/webhooks{?fields,filter,page}]
+
+A collection of webhooks
+
++ Model (application/json)
+
+    + Body
+
+        ```json
+        {
+        {
+          "webhooks":[
+            {
+              "id":21551,
+              "name":"Webhook created on Sep 03, 2014 @ 04:24 PM",
+              "status":"active",
+              "topic":"coupon.created",
+              "resource":"coupon",
+              "event":"created",
+              "hooks":[
+                "woocommerce_process_shop_coupon_meta",
+                "woocommerce_api_create_coupon"
+              ],
+              "delivery_url":"http://postcatcher.in/catchers/53d951274c003202000005b8",
+              "created_at":"2014-09-03T16:24:47Z",
+              "updated_at":"2014-09-03T16:24:47Z"
+            },
+            {
+              "id":21537,
+              "name":"Webhook created on Jul 30, 2014 @ 08:10 PM",
+              "status":"active",
+              "topic":"order.created",
+              "resource":"order",
+              "event":"created",
+              "hooks":[
+                "woocommerce_checkout_order_processed",
+                "woocommerce_process_shop_order_meta",
+                "woocommerce_api_create_order"
+              ],
+              "delivery_url":"http://postcatcher.in/catchers/53d951274c003202000005b8",
+              "created_at":"2014-07-30T20:10:36Z",
+              "updated_at":"2014-07-30T20:10:36Z"
+            }
+          ]
+        }
+        ```
+
+### List all Webhooks [GET]
+
++ Parameters
+    * fields (optional, string, `id,name`) ... see Parameters > Fields Parameter documentation
+    * filter (optional, string, `filter[limit]=100`) ... see Parameters > Filter Parameter documention
+    * page (optional, string, `2`) ... see Pagination documentation
+
++ Response 200
+
+    [Webhooks Collection][]
+
+### Create a Webhook [POST]
+
+To create a new Webhook, provide a JSON hash.
+
+Required attributes are:
+
+* `topic` *(string)* - a valid topic, see the complete list above under Webhooks
+* `delivery_url` *(string)* - a valid delivery URL starting with `http://` or `https://`
+
+Optional attributes are:
+
+* `name` *(string)* - a friendly name for identifying this webhook, defaults to `Webhook created on <date>`
+* `secret` *(string)* - a secret key used to generate a hash of the delivered webhook and provided in the request headers. This will default to the current API user's consumer secret if not provided.
+
+Note that after successfully creating a new webhook, a ping is sent to the delivery URL containing the newly-created webhook's ID (e.g. `webhook_id=<id>`)
+
++ Request (application/json)
+
+    + Body
+
+        ```json
+        {
+          "webhook": {
+            "name": "An add to cart webhook",
+            "secret": "my-super-secret-private-key",
+            "topic": "action.woocommerce_add_to_cart",
+            "delivery_url": "http://requestb.in/1972vwx1"
+          }
+        }
+        ```
+
++ Response 201 (application/json)
+
+    [Webhook][]
+
+## Webhook Count [/webhooks/count{?status,filter}]
+
+### Get total count of Webhooks [GET]
+
+Get the total number of Webhooks
+
++ Parameters
+    * status (optional, string, `paused`) ... Get a total count of webhooks with the given status
+    * filter (optional, string, `filter[created_at]=2014-09-01`) ... see Parameters > Filter Parameter documention
+    
++ Response 200 (application/json)
+
+    + Body
+
+        ```json
+        {
+          "count": 3
+        }
+        ```
+
+## Webhook Delivery [/webhooks/{webhook_id}/deliveries{id}{?fields}]
+
+Delivery logs are saved whenever a webhook is delivered. Only the 25 most recent deliveries for a webhook are available. The webhook delivery has the following attributes:
+
+* `id` *(int)* - the delivery ID (comment ID)
+* `duration` *(string)* - the delivery duration, in seconds
+* `summary` *(string)* - a friendly summary of the response including the HTTP response code, message, and body
++ `request_url` *(string)* - the URL where the webhook was delivered
++ `request_headers` *(hash)* - a JSON hash of request headers
+    * `User-Agent` *(string)* - the request user agent, defaults to "WooCommerce/{version} Hookshot (WordPress/{version})"
+    * `Content-Type` *(string)* - the request content-type, defaults to "application/json"
+    * `X-WC-Webhook-Topic` *(string)* - the webhook topic
+    * `X-WC-Webhook-Resource` *(string)* - the webhook resource
+    * `X-WC-Webhook-Event` *(string)* - the webhook event
+    * `X-WC-Webhook-Signature` *(string)* - a base64 encoded HMAC-SHA256 hash of the payload
+    * `X-WC-Webhook-ID` *(int)* - the webhook's ID
+    * `X-WC-Webhook-Delivery-ID` *(int)* - the delivery ID
++ `request_body` *(string)* - the request body, this matches the API response for the given resource (e.g. for the coupon.updated topic, the request body would match the response for GET /coupons/{id})
++ `response_code` *(string)* - the HTTP response code from the receiving server
++ `response_message` *(string)* - the HTTP response message from the receiving server
++ `response_headers` *(string)* - a JSON hash of the response headers from the receiving server
++ `response_body` *(string)* - the response body from the receiving server
++ `created_at` *(string)* - a DateTime of when the delivery was logged
+
++ Parameters
+    * webhook_id (required, number, `123`) ... ID of the webhook
+    * id (required, number, `789`) ... ID of the webhook delivery
+    * fields (optional, string, `duration,summary`) ... see Parameters > Fields Parameter documentation
+
++ Model (application/json)
+
+    + Body
+
+        ```json
+        {
+          "webhook_delivery":{
+            "id":88360,
+            "duration":"0.09728",
+            "summary":"HTTP 201 Created: Created",
+            "request_method":"POST",
+            "request_url":"http://postcatcher.in/catchers/53d943dc4c00320200000485",
+            "request_headers":{
+              "User-Agent":"WooCommerce/2.2.0 Hookshot (WordPress/3.9.1)",
+              "Content-Type":"application/json",
+              "X-WC-Webhook-Topic":"order.created",
+              "X-WC-Webhook-Resource":"order",
+              "X-WC-Webhook-Event":"created",
+              "X-WC-Webhook-Signature":"JsiERts6QzRDhhb6uXJj3oD1m74jr1jAlOq6U4cQ33A=",
+              "X-WC-Webhook-ID":21535,
+              "X-WC-Webhook-Delivery-ID":88360
+            },
+            "request_body":"redacted",
+            "response_code":"201",
+            "response_message":"Created",
+            "response_headers":{
+              "server":"nginx",
+              "date":"Wed, 30 Jul 2014 19:17:46 GMT",
+              "content-type":"text/plain",
+              "content-length":"7",
+              "connection":"close",
+              "x-powered-by":"Express",
+              "set-cookie":"connect.sid=4M9NNCZC88SriJ804h1v3Xdh.W1FVOFnHZk6e%2FT1xV6YiF1n1tSfwb7RlbZKW2V%2F49oc; path=/; expires=Wed, 30 Jul 2014 23:17:46 GMT; httpOnly",
+              "x-response-time":"24ms"
+            },
+            "response_body":"Created",
+            "created_at":"2014-07-30T19:17:47Z"
+          }
+        }
+        ```
+
+### Get a single webhook delivery [GET]
+
++ Response 200
+
+    [Webhook Delivery][]
+
+## Webhook Deliveries Collection [/webhooks/{webhook_id}/deliveries{?fields}]
+
+A collection of webhook deliveries
+
++ Parameters
+    * fields (optional, string, `duration,summary`) ... see Parameters > Fields Parameter documentation
+
++ Model (application/json)
+
+    + Body
+
+        ```json
+        {
+          "webhook_deliveries":[
+            {
+              "id":88414,
+              "duration":"0.32718",
+              "summary":"HTTP 201 Created: Created",
+              "request_method":"POST",
+              "request_url":"http://postcatcher.in/catchers/53d951274c003202000005b8",
+              "request_headers":{
+                "User-Agent":"WooCommerce/2.2.0 Hookshot (WordPress/3.9.2)",
+                "Content-Type":"application/json",
+                "X-WC-Webhook-Topic":"order.created",
+                "X-WC-Webhook-Resource":"order",
+                "X-WC-Webhook-Event":"created",
+                "X-WC-Webhook-Signature":"0pxotPlyksQXYrVcFhYXraLbe3Rd1nT9YcKjIZdQZ1M=",
+                "X-WC-Webhook-ID":21537,
+                "X-WC-Webhook-Delivery-ID":88414
+              },
+              "request_body":"redacted",
+              "response_code":"201",
+              "response_message":"Created",
+              "response_headers":{
+                "server":"nginx",
+                "date":"Sat, 30 Aug 2014 20:46:03 GMT",
+                "content-type":"text/plain",
+                "content-length":"7",
+                "connection":"close",
+                "x-powered-by":"Express",
+                "set-cookie":"connect.sid=XaOYY0ObzvdebXJEtcoPxNaI.0%2FDAnUQ%2F5dK40wMV5uDtn1n9jli0ajQzuFoR7rQWPkw; path=/; expires=Sun, 31 Aug 2014 00:46:03 GMT; httpOnly",
+                "x-response-time":"72ms"
+              },
+              "response_body":"Created",
+              "created_at":"2014-08-30T20:46:03Z"
+            },
+            {
+              "id":88412,
+              "duration":"0.05861",
+              "summary":"HTTP 201 Created: Created",
+              "request_method":"POST",
+              "request_url":"http://postcatcher.in/catchers/53d951274c003202000005b8",
+              "request_headers":{
+                "User-Agent":"WooCommerce/2.2.0 Hookshot (WordPress/3.9.2)",
+                "Content-Type":"application/json",
+                "X-WC-Webhook-Topic":"order.created",
+                "X-WC-Webhook-Resource":"order",
+                "X-WC-Webhook-Event":"created",
+                "X-WC-Webhook-Signature":"vpvAozA4fYLEIwMxpKKPKwLKI+4+sbQeYMo/7zfbAzc=",
+                "X-WC-Webhook-ID":21537,
+                "X-WC-Webhook-Delivery-ID":88412
+              },
+              "request_body":"redacted",
+              "response_code":"201",
+              "response_message":"Created",
+              "response_headers":{
+                "server":"nginx",
+                "date":"Sat, 30 Aug 2014 17:53:45 GMT",
+                "content-type":"text/plain",
+                "content-length":"7",
+                "connection":"close",
+                "x-powered-by":"Express",
+                "set-cookie":"connect.sid=2sv50gykrbZFBGTn7fT3ueGy.%2BLaLBrx%2FEq0%2F%2F72HqwZnz0B%2BKUbyk9X0wfBiC1fjWYU; path=/; expires=Sat, 30 Aug 2014 21:53:45 GMT; httpOnly",
+                "x-response-time":"11ms"
+              },
+              "response_body":"Created",
+              "created_at":"2014-08-30T17:53:46Z"
+            }
+          ]
+        }
+        ```
+
+### List all Webhook Deliveries [GET]
+
++ Response 200
+
+    [Webhook Deliveries Collection][]
+
