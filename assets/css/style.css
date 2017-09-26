@@ -91,18 +91,13 @@ img {
 h1 em {
   font-style: normal;
 }
-.ninjas {
-  width: 100%;
-  background: #FFFFFF;
-  text-align: center;
-}
 .content {
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
 }
 a {
-  color: #42a2ce;
+  color: #96588a;
   text-decoration: none;
 }
 a:hover {
@@ -132,7 +127,7 @@ a:hover {
   line-height: 1;
   -webkit-font-smoothing: antialiased;
   margin-right: 7px;
-  content: "\f09b";
+  content: "\f15c";
   position: absolute;
   top: 50%;
   left: 1em;
@@ -147,14 +142,14 @@ a:hover {
 }
 .list .row:hover {
   background-color: #fafafa;
-  box-shadow: inset 0.236em 0 0 0 #42a2ce;
+  box-shadow: inset 0.236em 0 0 0 #96588a;
 }
 .list .row:hover:before,
 .list .row:hover:after {
-  color: #2080ac;
+  color: #96588a;
 }
 .list .row:hover h2 {
-  color: #2080ac;
+  color: #96588a;
 }
 .list .row:hover:after {
   right: .618em;
@@ -164,7 +159,7 @@ a:hover {
   font-size: .875em;
 }
 .list .row h2 {
-  color: #42a2ce;
+  color: #96588a;
   margin-bottom: .202em;
 }
 .list p {
