@@ -64,5 +64,40 @@ class WC_Tests_Gateways extends WC_Unit_Test_Case {
 		$order->save();
 		$this->assertFalse( $gateway->can_refund_order( $order ) );
 	}
+
+	/**
+	 * Test BACS gateway settings
+	 *
+	 * @return void
+	 */
+	public function test_bacs_gateway() {
+		$_POST['bacs_account_name'][0]   = 'test';
+		$_POST['bacs_account_number'][0] = '123';
+		$_POST['bacs_bank_name'][0]      = 'bank';
+		$_POST['bacs_sort_code'][0]      = '123';
+		$_POST['bacs_iban'][0]           = '123';
+		$_POST['bacs_bic'][0]            = '123';
+
+		$gateway = new WC_Gateway_BACS();
+
+		// Test saving account details.
+		$gateway->save_account_details();
+		$save_option = get_option( 'woocommerce_bacs_accounts' );
+		$this->assertSame( 'test', $save_option[0]['account_name'] );
+
+		// Test HTML generation.
+		$html = $gateway->generate_account_details_html();
+		$this->assertNotFalse( strpos( $html, 'name="bacs_sort_code[0]"' ) );
+
+		// Test thankyou.
+		$order = WC_Helper_Order::create_order();
+		ob_start();
+		$gateway->thankyou_page( $order->get_id() );
+		$html = ob_get_clean();
+		$this->assertNotFalse( strpos( $html, 'woocommerce-bacs-bank-details' ) );
+
+	}
+
+
 }
 
