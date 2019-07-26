@@ -17,7 +17,6 @@ class WC_AJAX {
 	 * Hook in ajax handlers.
 	 */
 	public static function init() {
-		add_action( 'init', array( __CLASS__, 'define_ajax' ), 0 );
 		add_action( 'template_redirect', array( __CLASS__, 'do_wc_ajax' ), 0 );
 		self::add_ajax_events();
 	}
@@ -35,6 +34,8 @@ class WC_AJAX {
 
 	/**
 	 * Set WC AJAX constant and headers.
+	 *
+	 * @deprecated 3.7.1
 	 */
 	public static function define_ajax() {
 		// phpcs:disable

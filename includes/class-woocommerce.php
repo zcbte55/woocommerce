@@ -231,6 +231,16 @@ final class WooCommerce {
 		$this->define( 'WC_TEMPLATE_DEBUG_MODE', false );
 		$this->define( 'WC_NOTICE_MIN_PHP_VERSION', '5.6.20' );
 		$this->define( 'WC_NOTICE_MIN_WP_VERSION', '4.9' );
+
+		// To allow for conditional includes to use AJAX constants.
+		if ( ! empty( $_GET['wc-ajax'] ) ) {
+			$this->define( 'DOING_AJAX', true );
+			$this->define( 'WC_DOING_AJAX', true );
+			if ( ! WP_DEBUG || ( WP_DEBUG && ! WP_DEBUG_DISPLAY ) ) {
+				@ini_set( 'display_errors', 0 ); // Turn off display_errors during AJAX events to prevent malformed JSON.
+			}
+			$GLOBALS['wpdb']->hide_errors();
+		}
 	}
 
 	/**
@@ -291,7 +301,7 @@ final class WooCommerce {
 	 * @param  string $type admin, ajax, cron or frontend.
 	 * @return bool
 	 */
-	private function is_request( $type ) {
+	public function is_request( $type ) {
 		switch ( $type ) {
 			case 'admin':
 				return is_admin();

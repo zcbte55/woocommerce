@@ -32,6 +32,21 @@ class Packages {
 	];
 
 	/**
+	 * Array of package names and contexts when they should NOT be loaded.
+	 *
+	 * @var array Key is the package name/directory, value is an array of contexts when to not load the package.
+	 */
+	protected static $package_exclude_in_contexts = [
+		'woocommerce-blocks'   => [
+			'ajax',
+			'cron',
+		],
+		'woocommerce-rest-api' => [
+			'frontend',
+		],
+	];
+
+	/**
 	 * Init the package loader.
 	 *
 	 * @since 3.7.0
@@ -64,6 +79,15 @@ class Packages {
 	 */
 	protected static function load_packages() {
 		foreach ( self::$packages as $package_name => $package_class ) {
+			// Exclude packages in certain pre-defined contexts.
+			if ( isset( self::$package_exclude_in_contexts[ $package_name ] ) ) {
+				foreach ( self::$package_exclude_in_contexts[ $package_name ] as $excluded_context ) {
+					if ( WC()->is_request( $excluded_context ) ) {
+						continue 2;
+					}
+				}
+			}
+
 			if ( ! self::package_exists( $package_name ) ) {
 				self::missing_package( $package_name );
 				continue;
