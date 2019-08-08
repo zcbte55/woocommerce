@@ -760,7 +760,7 @@ class WC_Tax {
 			wp_cache_set( $cache_key, $tax_rate_classes, 'taxes' );
 		}
 
-		return $tax_rate_classes;
+		return apply_filter( 'woocommerce_tax_rate_classes', $tax_rate_classes );
 	}
 
 	/**
