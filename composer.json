@@ -13,7 +13,7 @@
     "maxmind-db/reader": "1.6.0",
     "woocommerce/woocommerce-blocks": "2.5.10",
     "woocommerce/woocommerce-rest-api": "1.0.6",
-    "woocommerce/woocommerce-admin": "dev-try/downgrade-autoloader as 0.24.0"
+    "woocommerce/woocommerce-admin": "dev-try/puppeteer-test-run-in-core as 0.24.0"
   },
   "repositories": [
     {

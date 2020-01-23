@@ -15,7 +15,10 @@ module.exports = {
 	preset: 'jest-puppeteer',
 
 	// Where to look for test files
-	roots: [ '<rootDir>/tests/e2e-tests/specs' ],
+	roots: [
+		'<rootDir>/tests/e2e-tests/specs',
+		'<rootDir>/packages/woocommerce-admin/tests/e2e-tests/specs',
+	],
 
 	//setupFiles: [ '<rootDir>/.node_modules/regenerator-runtime/runtime' ],
 
