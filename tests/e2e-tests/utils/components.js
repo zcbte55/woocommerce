@@ -175,4 +175,8 @@ const createVariableProduct = async () => {
 	return variablePostIdValue;
 };
 
-export { createSimpleProduct, createVariableProduct };
+export {
+	createSimpleProduct,
+	createVariableProduct,
+	verifyAndPublish,
+};
