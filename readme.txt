@@ -186,7 +186,7 @@ INTERESTED IN DEVELOPMENT?
 * Dev - Stripped the internals of the DI Container to address plugin dependency conflicts it caused. #27395
 * Fix - Add more protection for field locale property incase it's not defined. #27405
 
-[See changelog for all versions](https://raw.githubusercontent.com/woocommerce/woocommerce/master/CHANGELOG.txt).
+[See changelog for all versions](https://raw.githubusercontent.com/woocommerce/woocommerce/master/changelog.txt).
 
 == Upgrade Notice ==
 
