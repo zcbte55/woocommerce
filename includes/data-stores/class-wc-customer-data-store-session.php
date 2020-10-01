@@ -93,7 +93,10 @@ class WC_Customer_Data_Store_Session extends WC_Data_Store_WP implements WC_Cust
 	 * @param WC_Customer $customer Customer object.
 	 */
 	public function read( &$customer ) {
-		$data = (array) WC()->session->get( 'customer' );
+		$data = array();
+		if ( WC()->session && method_exists( WC()->session, 'get' ) ) {
+			$data = (array) WC()->session->get( 'customer' );
+		}
 
 		/**
 		 * There is a valid session if $data is not empty, and the ID matches the logged in user ID.
