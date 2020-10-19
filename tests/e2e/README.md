@@ -11,15 +11,17 @@ Automated end-to-end tests for WooCommerce.
 - [Configuration](#configuration)
   - [Test Environment](#test-environment)
   - [Test Variables](#test-variables)
-  - [Jest test sequencer](#jest-test-sequencer)      
+  - [Jest test sequencer](#jest-test-sequencer)
+  - [Chromium Download](#chromium-download)
 - [Running tests](#running-tests)
   - [Prep work for running tests](#prep-work-for-running-tests)
   - [How to run tests in headless mode](#how-to-run-tests-in-headless-mode) 
   - [How to run tests in non-headless mode](#how-to-run-tests-in-non-headless-mode)
+  - [How to run tests in debug mode](#how-to-run-tests-in-debug-mode)
   - [How to run an individual test](#how-to-run-an-individual-test)
   - [How to skip tests](#how-to-skip-tests)
   - [How to run tests using custom WordPress, PHP and MariaDB versions](#how-to-run-tests-using-custom-wordpress,-php-and-mariadb-versions)
-- [Writing tests](#writing-tests) 
+- [Writing tests](#writing-tests)
 - [Debugging tests](#debugging-tests)
 
 ## Pre-requisites
@@ -79,6 +81,16 @@ If you need to modify the port for your local test environment (eg. port is alre
 
 Setup Wizard e2e test (located in `activate-and-setup` directory) will run before all other tests. This will allow making sure that WooCommerce is activated on the site and for the setup wizard to be completed on a brand new install of WooCommerce. 
 
+### Chromium Download
+
+By default, `Puppeteer` downloads the `Chromium` package every time you run `npm install` or `npm update`. To disable that download add the following to your `.bash_profile` or `.zshrc` (whichever you use):
+
+```shell script
+export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+```
+
+Puppeteer will still automatically download Chromium when needed.
+
 ## Running tests
 
 ### Prep work for running tests
@@ -137,8 +149,8 @@ npm run test:e2e
 
 ### How to run tests in non-headless mode
 
-Tests are being run headless by default. However, sometimes it's useful to observe the browser while running tests. To do so, you can run tests in a non-headless (dev) mode:
-                                    
+Tests are run headless by default. However, sometimes it's useful to observe the browser while running tests. To do so, you can run tests in a non-headless (dev) mode:
+
 ```bash
 npm run test:e2e-dev
 ```
@@ -158,12 +170,22 @@ For example:
 - `PUPPETEER_SLOWMO=10` - will run tests faster
 - `PUPPETEER_SLOWMO=70` - will run tests slower
 
+### How to run tests in debug mode
+
+Tests are run headless by default. While writing tests it may be useful to have the debugger loaded while running a test in non-headless mode. To run tests in debug mode:
+            
+```bash
+npm run test:e2e-debug
+```
+
+When all tests have been completed the debugger is left active. Control doesn't return to the command line until the debugger is closed. Otherwise, debug mode functions the same as non-headless mode.
+
 ### How to run an individual test
 
 To run an individual test, use the direct path to the spec. For example:
 
 ```bash
-npm run test:e2e ./tests/e2e/specs/wp-admin/wp-admin-product-new.test.js
+npm run test:e2e ./tests/e2e/specs/wp-admin/test-create-order.js
 ``` 
 
 ### How to skip tests

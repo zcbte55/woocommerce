@@ -32,6 +32,11 @@ jobs:
   - name: "Core E2E Tests"
     php: 7.4
     env: WP_VERSION=latest WP_MULTISITE=0 RUN_E2E=1
+    install:
+     - nvm install
+     - npm install
+     - composer install
+     - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x16"
     script:
       - npm run build:assets
       - npm install jest --global
@@ -42,15 +47,12 @@ jobs:
   - name: "WP Nightly"
     php: 7.4
     env: WP_VERSION=nightly WP_MULTISITE=0
-  - name: "WP Latest"
-    php: 7.2
-    env: WP_VERSION=5.4 WP_MULTISITE=0
   - name: "WP Latest - 1"
     php: 7.2
-    env: WP_VERSION=5.3 WP_MULTISITE=0
+    env: WP_VERSION=5.4 WP_MULTISITE=0
   - name: "WP Latest - 2"
     php: 7.2
-    env: WP_VERSION=5.2 WP_MULTISITE=0
+    env: WP_VERSION=5.3 WP_MULTISITE=0
   - name: "Code Standards"
     php: 7.4
     env: WP_VERSION=latest WP_MULTISITE=0 RUN_PHPCS=1
@@ -60,6 +62,7 @@ jobs:
   allow_failures:
   - php: 7.4
     env: WP_VERSION=latest WP_MULTISITE=0 RUN_CODE_COVERAGE=1
+  - name: "WP Nightly"
 
 install:
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
@@ -70,9 +73,7 @@ install:
     else
       echo "xdebug.ini does not exist"
     fi
-  - nvm install
-  - npm install
-  - composer install --no-dev
+  - composer install
   - |
     # Install WP Test suite, install PHPUnit globally:
     if [[ ! -z "$WP_VERSION" ]]; then
