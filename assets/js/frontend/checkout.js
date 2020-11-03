@@ -507,8 +507,9 @@ jQuery( function( $ ) {
 				$.ajax({
 					type:		'POST',
 					url:		wc_checkout_params.checkout_url,
-					data:		$form.serialize(),
-					dataType:   'json',
+					data:		new FormData( this ),
+					contentType: false,
+					processData: false,
 					success:	function( result ) {
 						// Detach the unload handler that prevents a reload / redirect
 						wc_checkout_form.detachUnloadEventsOnSubmit();
@@ -562,7 +563,7 @@ jQuery( function( $ ) {
 			wc_checkout_form.$checkout_form.removeClass( 'processing' ).unblock();
 			wc_checkout_form.$checkout_form.find( '.input-text, select, input:checkbox' ).trigger( 'validate' ).blur();
 			wc_checkout_form.scroll_to_notices();
-			$( document.body ).trigger( 'checkout_error' );
+			$( document.body ).trigger( 'checkout_error' , [ error_message ] );
 		},
 		scroll_to_notices: function() {
 			var scrollElement           = $( '.woocommerce-NoticeGroup-updateOrderReview, .woocommerce-NoticeGroup-checkout' );
