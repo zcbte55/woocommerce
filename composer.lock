@@ -4,27 +4,27 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "77e54b85eedb5be94edbd73cf5436900",
+    "content-hash": "8eb0bde128c5763ad9e7b3384d3594b0",
     "packages": [
         {
             "name": "automattic/jetpack-autoloader",
-            "version": "v2.6.0",
+            "version": "v2.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-autoloader.git",
-                "reference": "47dde8dbca6b1e30f176725f2f748a9abefcaf58"
+                "reference": "d6d89b71c0f9ba13bbbfb28a75a9174c79193d2a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-autoloader/zipball/47dde8dbca6b1e30f176725f2f748a9abefcaf58",
-                "reference": "47dde8dbca6b1e30f176725f2f748a9abefcaf58",
+                "url": "https://api.github.com/repos/Automattic/jetpack-autoloader/zipball/d6d89b71c0f9ba13bbbfb28a75a9174c79193d2a",
+                "reference": "d6d89b71c0f9ba13bbbfb28a75a9174c79193d2a",
                 "shasum": ""
             },
             "require": {
                 "composer-plugin-api": "^1.1 || ^2.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^5.7 || ^6.5 || ^7.5"
+                "yoast/phpunit-polyfills": "0.2.0"
             },
             "type": "composer-plugin",
             "extra": {
@@ -43,7 +43,7 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Creates a custom autoloader for a plugin or theme.",
-            "time": "2020-11-19T21:20:12+00:00"
+            "time": "2020-12-08T17:35:08+00:00"
         },
         {
             "name": "automattic/jetpack-constants",
